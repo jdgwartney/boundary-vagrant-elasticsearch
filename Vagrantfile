@@ -14,8 +14,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "boundary-elastic-search"
 
   config.vm.provision :shell do |shell|
-     shell.inline = "puppet module install puppetlabs/java;
-                     puppet module install boundary-boundary"
+     shell.inline = "sudo yum install -y git;
+                     puppet module install puppetlabs/java;
+                     puppet module install elasticsearch-elasticsearch
+                     [ ! -d /etc/puppet/modules/boundary ] && cd /etc/puppet/modules && git clone https://github.com/boundary/boundary_puppet boundary;
+                     exit 0"
   end
 
 

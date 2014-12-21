@@ -1,19 +1,21 @@
-$elasticsearch_pkg_name = $operatingsystem ? {
-  centos => elasticsearch,
-  default => openssl
+
+exec { 'update-packages':
+  command => '/usr/bin/yum update -y',
+  creates => '/vagrant/.locks/update-packages',
 }
 
-#exec { 'update-packages':
-#  command => '/usr/bin/yum update -y',
-#  creates => '/vagrant/.locks/update-packages',
-#}
-
+#
+# Add the GPG key to our system
+#
 exec { 'elasticsearch-repo-gpg-key':
   command => '/bin/rpm --import https://packages.elasticsearch.org/GPG-KEY-elasticsearch',
   creates => '/vagrant/.locks/add-elasticsearch-repo',
-#  require => Exec['update-packages']
+  require => Exec['update-packages']
 }
 
+#
+# Update our yum repository
+# TODO: Only perform this on Centos/Fedora/RedHat
 file { 'elasticsearch.repo':
   path    => '/etc/yum.repos.d/elasticsearch.repo',
   ensure  => file,
@@ -21,21 +23,23 @@ file { 'elasticsearch.repo':
   source  => '/vagrant/manifests/elasticsearch.repo'
 }
 
-package { 'jdk':
-  name => 'java-1.7.0-openjdk',
-  allow_virtual => false,
-  ensure => 'latest',
-  require => File['elasticsearch.repo']
-}
 
-package { 'elasticsearch':
-  name => 'elasticsearch',
-  allow_virtual => false,
-  ensure => 'latest',
-  require => Package['jdk']
-}
+#
+# TODO: Multiple Nodes for Elastic Search
+#
+#node "boundary-elastic-search" {
 
-class { 'boundary':
-  token => 'api_token'
-}
+ class { 'boundary':
+    token => '<api token>'
+  }
 
+  class { 'java':
+    distribution => 'jdk',
+  }
+
+  class { 'elasticsearch':
+    ensure => 'present',
+    require => [File['elasticsearch.repo'], Class['java']]
+  }
+
+#}
