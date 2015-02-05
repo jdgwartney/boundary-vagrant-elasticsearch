@@ -1,3 +1,7 @@
+# Explictly set to avoid warning message
+Package {
+  allow_virtual => false,
+}
 
 exec { 'update-packages':
   command => '/usr/bin/yum update -y',
@@ -23,6 +27,13 @@ file { 'elasticsearch.repo':
   source  => '/vagrant/manifests/elasticsearch.repo'
 }
 
+file { 'bash_profile':
+  path    => '/home/vagrant/.bash_profile',
+  ensure  => file,
+  require => Class['elasticsearch'],
+  source  => '/vagrant/manifests/bash_profile'
+}
+
 
 #
 # TODO: Multiple Nodes for Elastic Search
@@ -37,9 +48,24 @@ file { 'elasticsearch.repo':
     distribution => 'jdk',
   }
 
+#  class { 'elasticsearch':
+#    ensure => 'present',
+#    require => [File['elasticsearch.repo'], Class['java']]
+#  }
+
   class { 'elasticsearch':
-    ensure => 'present',
+    config => { 'cluster.name' => 'boundary' },
     require => [File['elasticsearch.repo'], Class['java']]
+  }
+
+  elasticsearch::instance { 'boundary-es-001':
+    config => { 'node.master' => 'true', 'node.data' => 'true'}
+  }
+  elasticsearch::instance { 'boundary-es-002':
+    config => { 'node.master' => 'false', 'node.data' => 'true'}
+  }
+  elasticsearch::instance { 'boundary-es-003':
+    config => { 'node.master' => 'false', 'node.data' => 'true'}
   }
 
 #}

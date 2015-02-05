@@ -11,8 +11,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "puppetlabs/centos-6.5-64-puppet"
-  config.vm.hostname = "boundary-elastic-search"
+  config.vm.hostname = "boundary-elasticsearch"
 
+  #
+  # Add the required puppet modules before provisioning is run by puppet
+  #
+  # NOTE: 
   config.vm.provision :shell do |shell|
      shell.inline = "sudo yum install -y git;
                      puppet module install puppetlabs/java;
