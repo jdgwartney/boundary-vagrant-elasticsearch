@@ -6,29 +6,39 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = "puppetlabs/centos-6.6-64-puppet"
-
-  # Configure additional CPUs and Memory
-#  config.vm.provider "virtualbox" do |v|
-#      v.memory = 2048
-#      v.cpus = 2
-#  end
-
-  config.vm.define "es-00" do |v|
-    v.vm.network "private_network", type: "dhcp"
-    v.vm.hostname = "es-00"
+# Configure additional CPUs and Memory
+  config.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 2
   end
 
-  config.vm.define "es-01" do |v|
-    v.vm.network "private_network", type: "dhcp"
-    v.vm.hostname = "es-01"
+  config.vm.define "centos-6.6", autostart: false do |v|
+    v.vm.box = "puppetlabs/centos-6.6-64-puppet"
+    v.vm.hostname = "centos-6-6"
+  end
+
+  config.vm.define "centos-7.0", autostart: false do |v|
+    v.vm.box = "puppetlabs/centos-7.0-64-puppet"
+    v.vm.hostname = "centos-7-0"
+  end
+
+  config.vm.define "ubuntu-12.04", autostart: false do |v|
+    v.vm.box = "puppetlabs/ubuntu-12.04-64-puppet"
+    v.vm.hostname = "ubuntu-12-04"
+  end
+
+  config.vm.define "ubuntu-14.04", autostart: false do |v|
+    v.vm.box = "puppetlabs/ubuntu-14.04-64-puppet"
+    v.vm.hostname = "ubuntu-14-04"
   end
 
   #
   # Add the required puppet modules before provisioning is run by puppet
   #
   config.vm.provision :shell do |shell|
-     shell.inline = "puppet module install puppetlabs/java;
+     shell.inline = "puppet module install puppetlabs-stdlib;
+                     puppet module install puppetlabs-apt;
+                     puppet module install puppetlabs-java;
                      puppet module install camptocamp-augeas;
                      puppet module install elasticsearch-elasticsearch;
                      puppet module install boundary-boundary;
@@ -42,6 +52,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "puppet" do |puppet|
     puppet.manifests_path = "manifests"
     puppet.manifest_file  = "site.pp"
+    puppet.facter = {
+      "boundary_api_token" => ENV["BOUNDARY_API_TOKEN"]
+    }
   end
 
 
