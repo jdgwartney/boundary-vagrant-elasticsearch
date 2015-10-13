@@ -63,6 +63,7 @@ node /^centos-7-0/ {
   exec { 'update-rpm-packages':
     command => '/usr/bin/yum update -y',
     creates => '/vagrant/.locks/update-rpm-packages',
+    timeout => 0
   }
 
   package {'epel-release':
@@ -113,6 +114,7 @@ node /^centos/ {
   exec { 'update-rpm-packages':
     command => '/usr/bin/yum update -y',
     creates => '/vagrant/.locks/update-rpm-packages',
+    timeout => 0
   }
 
   package {'epel-release':
